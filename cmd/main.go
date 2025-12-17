@@ -80,7 +80,8 @@ func main() {
 
 	// Send results to Splunk HEC (if configured)
 	if err := sendToSplunkHEC(cfg, stats, logger); err != nil {
-		logger.Error("Failed to send results to Splunk HEC", zap.Error(err))
+		logger.Fatal("Failed to send results to Splunk HEC", zap.Error(err))
+
 	}
 }
 
