@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: dnsstats-{{ .Values.cronjob.identifier }}-app-config
+  namespace: {{ .Values.namespace | default "dnsstats" }}
+data:
+  config.json: |
+    {
+      "description": {{ .Values.settings.description | quote }},
+      "domain": {{ .Values.settings.domain | quote }},
+      "datacenter": {{ .Values.settings.datacenter | quote }},
+      "platform": {{ .Values.settings.platform | quote }},
+      "servers": [{{- range $index, $server := .Values.settings.servers }}{{- if $index }},{{ end }}{{ $server | quote }}{{- end }}],
+      "transport": {{ .Values.settings.transport | quote }}  
+      "port": {{ .Values.settings.port }},
+      "actual_address": {{ .Values.settings.actual_address | quote }},
+      "qps": {{ .Values.settings.qps }},
+      "duration": {{ .Values.settings.duration }},
+      "timeout": {{ .Values.settings.timeout }}
+    }

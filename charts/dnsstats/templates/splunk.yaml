@@ -1,0 +1,18 @@
+{{- if .Values.splunk.enabled }}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: dnsstats-{{ .Values.cronjob.identifier }}-splunk-secret
+  namespace: {{ .Values.namespace | default "dnsstats" }}
+type: Opaque
+stringData:
+  splunk.json: |
+    {
+      "endpoint_url": {{ .Values.splunk.endpoint | quote }},
+      "token": {{ .Values.splunk.token | quote }},
+      "disable_tls": {{ .Values.splunk.disable_tls_warning }},
+      "hec_index": {{ .Values.splunk.index | quote }},
+      "hec_source": {{ .Values.splunk.source | quote }},
+      "hec_sourcetype": {{ .Values.splunk.sourcetype | quote }}
+    }
+{{- end }}

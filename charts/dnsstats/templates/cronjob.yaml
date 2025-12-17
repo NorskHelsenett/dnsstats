@@ -1,0 +1,67 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: dnsstats-{{ .Values.cronjob.identifier }}
+  namespace: {{ .Values.namespace | default "dnsstats" }}
+spec:
+  schedule: {{ .Values.cronjob.schedule | quote }}
+  concurrencyPolicy: {{ .Values.cronjob.allowConcurrent | ternary "Allow" "Forbid" }}
+  successfulJobsHistoryLimit: {{ .Values.cronjob.successfulJobsHistoryLimit | default 3 }}
+  failedJobsHistoryLimit: {{ .Values.cronjob.failedJobsHistoryLimit | default 3 }}
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+            app: dnsstats-{{ .Values.cronjob.identifier }}
+        spec:
+          restartPolicy: Never
+          {{- with .Values.container.hostAliases }}
+          hostAliases:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          containers:
+            - name: dnsstats-{{ .Values.cronjob.identifier }}
+              image: {{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}
+              imagePullPolicy: {{ .Values.image.pullPolicy | default "IfNotPresent" }}
+              securityContext:
+                runAsNonRoot: true
+                runAsUser: 1993
+                runAsGroup: 1993
+                readOnlyRootFilesystem: true
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop: ["ALL"]
+                seccompProfile:
+                  type: RuntimeDefault
+              resources:
+                requests:
+                  memory: {{ .Values.container.limits.memory.min }}
+                  cpu: {{ .Values.container.limits.cpu.min }}
+                limits:
+                  memory: {{ .Values.container.limits.memory.max }}
+                  cpu: {{ .Values.container.limits.cpu.max }}
+              volumeMounts:
+                - name: appconfig
+                  mountPath: /app/config.json
+                  subPath: config.json
+                - name: splunk
+                  mountPath: /app/splunk.json
+                  subPath: splunk.json
+                {{- if .Values.container.caBundle }}
+                - name: cabundle
+                  mountPath: /etc/ssl/certs/nhn-certbundle.crt
+                  subPath: nhn-certbundle.crt
+                {{- end }}
+              volumes:
+            - name: appconfig
+              configMap:
+                name: dnsstats-{{ .Values.cronjob.identifier }}-app-config
+            - name: splunk
+              secret:
+                secretName: dnsstats-{{ .Values.cronjob.identifier }}-splunk-secret
+            {{- if .Values.container.caBundle }}
+            - name: cabundle
+              configMap:
+              name: nhn-certbundle
+            {{- end }}

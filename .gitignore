@@ -1,0 +1,8 @@
+.DS_Store
+.vscode/*
+.git/*
+*__debug_bin*
+bin/*
+logs/*
+cmd/config.json
+cmd/splunk.json

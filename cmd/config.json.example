@@ -1,0 +1,16 @@
+{
+    "description": "dns-benchmark",
+    "domain": "p-hno-sqlag01.prod.drift.nhn.no",
+    "datacenter": "no-central-az1",
+    "platform": "vitistack",
+    "servers": [
+        "10.246.196.76",
+        "10.245.248.76"
+    ],
+    "transport": "udp",
+    "port": 53,
+    "actual_address": "https://ip.nhn.no",
+    "qps": 50,
+    "duration": 10,
+    "timeout": 1500
+}

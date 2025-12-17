@@ -1,0 +1,65 @@
+namespace: "dnsstats"
+
+image:
+  repository: "ncr.sky.nhn.no/ghcr/norskhelsenett/dnsstats"
+  tag: "latest"
+  pullPolicy: "Always"
+
+container:
+  hostAliases:                        # Optional hostAliases to be added to the pod, recommended!
+    - ip: 91.186.86.200
+      hostnames:
+      - ip.nhn.no
+    - ip: 10.204.28.110
+      hostnames:
+      - splunk-hec.nhn.no
+  caBundle: true                      # Include NHN CA bundle in the container (required for TLS connections to NHN endpoints), it requires the 'nhn-certbundle' ConfigMap to be present in the namespace
+  limits:
+    memory:
+      min: "100Mi"
+      max: "200Mi"
+    cpu:
+      min: "100m"
+      max: "600m"
+
+cronjob:
+  identifier: default                 # Unique identifier for the cronjob, multiple cronjobs must be deployed with different identifiers
+  schedule: "*/5 * * * *"             # Cron schedule expression (e.g., "*/5 * * * *" for every 5 minutes) 
+  successfulJobsHistoryLimit: 3       # Number of successful job histories to retain
+  failedJobsHistoryLimit: 3           # Number of failed job histories to retain
+  allowConcurrent: false              # Allow concurrent job executions (true/false)
+
+settings:
+  description: dns-benchmark          # Description to be included in the DNS stats
+  domain: nhn.no                      # Domain to be used for DNS queries (e.g. example.com)
+  datacenter: no-central-az1          # Datacenter identifier to be included in the DNS stats
+  platform: vitistack                 # Platform identifier to be included in the DNS stats
+  servers:                            # List of DNS servers to be queried, remove all servers in list to default to system configured DNS servers
+    - 10.246.196.76
+    - 10.245.248.76
+  transport: "udp"                    # Transport protocol to use for DNS queries (udp, tcp, tls, https)  
+  port: 53                            # Port number to use for DNS queries
+  actual_address: https://ip.nhn.no   # Endpoint to get NAT IP address
+  qps: 50                             # Queries per server pr second
+  duration: 10                        # Duration of the DNS query test in seconds
+  timeout: 1500                       # Timeout for each DNS query in milliseconds  
+
+splunk:
+  enabled: true                       # Enable or disable Splunk HEC logging
+  disable_tls_warning: false          # Disable TLS warnings (not recommended)
+  endpoint: https://splunk-hec.nhn.no/services/collector/event
+  token: replace-with-your-token      # Splunk HEC token 
+  index: dc_firewall                  # Splunk index to send data to
+  source: dnsResponse                 # Splunk source
+  sourcetype: dnsResponse:stats       # Splunk sourcetype
+
+alarmathan:
+  enable: true
+  app: dnsstats
+  environment: prod
+  cluster: p-dcn-001
+  criticality: Høy
+  severity: Høy
+  service_id: 917
+  team: Team Datasenter-Nettverk (Forretningsområde Skytjenester)
+  varseltilos: prod

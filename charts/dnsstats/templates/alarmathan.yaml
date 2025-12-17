@@ -1,0 +1,42 @@
+{{- if eq .Values.alarmathan.enable true}}
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  annotations:
+    prometheus-operator-validated: "true"
+  labels:
+    release: prometheus
+  name: dnsstats-{{ .Values.cronjob.identifier }}-prometheus-rules
+  namespace: {{ .Values.namespace | default "dnsstats" }}
+spec:
+  groups:
+  - name: cronjob.errors
+    rules:
+    - alert: DNSSTATS_FAIL_{{ .Values.cronjob.identifier | upper }}
+      annotations:
+        description: {{ quote "CronJob-en '{{ $labels.cronjob_name }}' i namespace '{{ $labels.namespace }}' har akkumulert 4 feilende Job-instanser." | replace "\"" "" }}
+        summary: {{ quote "Backup of mongo DB failed 4 times in a row - JOB:{{ $labels.cronjob_name }}" | replace "\"" "" }}
+      expr: |
+        (
+          count by (namespace, cronjob_name) (
+            label_replace(
+              kube_job_status_failed{job_name=~"dnsstats-{{ .Values.cronjob.identifier }}-\\d+$"} == 1,
+              "cronjob_name",
+              "$1",
+              "job_name",
+              "(.+)-\\d+$"
+            )
+          )
+        ) >= 4
+      for: 0m
+      labels:
+        app: {{ .Values.alarmathan.app }}
+        cluster: {{ .Values.alarmathan.cluster }}
+        criticality: {{ .Values.alarmathan.criticality }}
+        environment: {{ .Values.alarmathan.environment }}
+        namespace: prometheus-operator
+        severity: {{ .Values.alarmathan.severity }}
+        service_id: {{ .Values.alarmathan.service_id | quote }}
+        team: {{ .Values.alarmathan.team }}
+        varseltilos: {{ .Values.alarmathan.varseltilos }}
+{{ end }}
