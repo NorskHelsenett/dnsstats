@@ -10,8 +10,8 @@ spec:
   failedJobsHistoryLimit: {{ .Values.cronjob.failedJobsHistoryLimit | default 4 }}
   jobTemplate:
     spec:
+      backoffLimit: {{ .Values.cronjob.backoffLimit | default 0 }}
       template:
-        backoffLimit: {{ .Values.cronjob.backoffLimit | default 1 }}
         metadata:
           labels:
             app: dnsstats-{{ .Values.cronjob.identifier }}

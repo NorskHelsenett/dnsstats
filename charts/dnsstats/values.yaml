@@ -25,6 +25,7 @@ container:
 cronjob:
   identifier: default                 # Unique identifier for the cronjob, multiple cronjobs must be deployed with different identifiers
   schedule: "*/5 * * * *"             # Cron schedule expression (e.g., "*/5 * * * *" for every 5 minutes) 
+  backoffLimit: 0                     # Number of retries before considering a job as failed
   successfulJobsHistoryLimit: 3       # Number of successful job histories to retain
   failedJobsHistoryLimit: 4           # Number of failed job histories to retain
   allowConcurrent: false              # Allow concurrent job executions (true/false)
