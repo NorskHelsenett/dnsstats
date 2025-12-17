@@ -200,6 +200,12 @@ func OverrideConfigWithCustomJSON(cfg *BenchConfig, logger *zap.Logger) {
 		}
 		cfg.Domain = customConfiguration.Domain
 	}
+	if customConfiguration.Datacenter != "" {
+		cfg.Datacenter = customConfiguration.Datacenter
+	}
+	if customConfiguration.Platform != "" {
+		cfg.Platform = customConfiguration.Platform
+	}
 	if customConfiguration.Protocol != "" {
 		cfg.Protocol = customConfiguration.Protocol
 	}
