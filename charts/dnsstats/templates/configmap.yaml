@@ -11,7 +11,7 @@ data:
       "datacenter": {{ .Values.settings.datacenter | quote }},
       "platform": {{ .Values.settings.platform | quote }},
       "servers": [{{- range $index, $server := .Values.settings.servers }}{{- if $index }},{{ end }}{{ $server | quote }}{{- end }}],
-      "transport": {{ .Values.settings.transport | quote }}  
+      "transport": {{ .Values.settings.transport | quote }},  
       "port": {{ .Values.settings.port | int }},
       "actual_address": {{ .Values.settings.actual_address | quote }},
       "qps": {{ .Values.settings.qps | int }},
