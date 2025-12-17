@@ -15,7 +15,7 @@ spec:
     - alert: DNSSTATS_FAIL_{{ .Values.cronjob.identifier | upper }}
       annotations:
         description: {{ quote "CronJob-en '{{ $labels.cronjob_name }}' i namespace '{{ $labels.namespace }}' har akkumulert 4 feilende Job-instanser." | replace "\"" "" }}
-        summary: {{ quote "Backup of mongo DB failed 4 times in a row - JOB:{{ $labels.cronjob_name }}" | replace "\"" "" }}
+        summary: {{ quote "DNSstats failed 4 times in a row - JOB:{{ $labels.cronjob_name }}" | replace "\"" "" }}
       expr: |
         (
           count by (namespace, cronjob_name) (
