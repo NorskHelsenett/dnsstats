@@ -46,7 +46,7 @@ spec:
         value: "vitistack"
       - name: settings.servers[0]
         value: "10.246.196.76"
-      - name: settings.servers[0]
+      - name: settings.servers[1]
         value: "10.245.248.76"
       - name: settings.qps
         value: "50"
