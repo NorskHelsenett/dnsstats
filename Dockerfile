@@ -8,7 +8,7 @@ COPY . .
 RUN CGO_ENABLED=0 GOOS=${TARGETOS:-linux} GOARCH=${TARGETARCH} go build -o dnsstat ./cmd/...
 
 FROM alpine:latest
-RUN apk add --no-cache bash
+RUN apk update && apk add --no-cache bash ca-certificates
 
 WORKDIR /app
 
