@@ -1,6 +1,7 @@
 {
     "description": "dns-benchmark",
     "domain": "p-hno-sqlag01.prod.drift.nhn.no",
+    "dns_type": "A",
     "datacenter": "no-central-az1",
     "platform": "vitistack",
     "servers": [

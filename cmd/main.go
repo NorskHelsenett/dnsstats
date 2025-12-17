@@ -24,6 +24,7 @@ type BenchConfig struct {
 	Hostname      string        `json:"hostname,omitempty"`       // Hostname of the client
 	HostAddress   string        `json:"host_address,omitempty"`   // IP address of the client
 	Domain        string        `json:"domain"`                   // Domain to query
+	DNSType       string        `json:"dns_type,omitempty"`       // DNS record type to query (A or AAAA)
 	Datacenter    string        `json:"datacenter,omitempty"`     // Optional datacenter name
 	Platform      string        `json:"platform,omitempty"`       // Optional platform name
 	Servers       []string      `json:"servers,omitempty"`        // List of DNS servers (ip:port)
@@ -116,6 +117,7 @@ func sendToSplunkHEC(cfg BenchConfig, stats *BenchStats, logger *zap.Logger) err
 		Fields: map[string]string{
 			"description":  cfg.Description,
 			"domain":       cfg.Domain,
+			"dns_type":     cfg.DNSType,
 			"datacenter":   cfg.Datacenter,
 			"platform":     cfg.Platform,
 			"hostname":     cfg.Hostname,
@@ -124,6 +126,7 @@ func sendToSplunkHEC(cfg BenchConfig, stats *BenchStats, logger *zap.Logger) err
 			"protocol":     cfg.Protocol,
 			"port":         strconv.Itoa(cfg.Port),
 			"qps":          strconv.Itoa(cfg.QPS),
+			"timeout":      strconv.Itoa(int(cfg.Timeout.Milliseconds())),
 		},
 		Time:       time.Now().Unix(),
 		Index:      splunkConfiguration.HECIndex,
@@ -163,6 +166,7 @@ func NewConfig(logger *zap.Logger) BenchConfig {
 	return BenchConfig{
 		Description:   DefaultDescription,
 		Domain:        sanityDefaultDomain,
+		DNSType:       DefaultDNSType,
 		Hostname:      hostname,
 		Servers:       systemResolvers,
 		Protocol:      DefaultProtocol,
@@ -199,6 +203,9 @@ func OverrideConfigWithCustomJSON(cfg *BenchConfig, logger *zap.Logger) {
 			customConfiguration.Domain += "."
 		}
 		cfg.Domain = customConfiguration.Domain
+	}
+	if customConfiguration.DNSType != "" {
+		cfg.DNSType = strings.ToUpper(customConfiguration.DNSType)
 	}
 	if customConfiguration.Datacenter != "" {
 		cfg.Datacenter = customConfiguration.Datacenter
@@ -268,7 +275,7 @@ func runDNSBenchmark(cfg BenchConfig, logger *zap.Logger) *BenchStats {
 					return
 				case <-ticker.C:
 					go func() {
-						rtt, err := singleDNSQuery(srv, cfg.Domain, cfg.Timeout, cfg.Protocol)
+						rtt, err := singleDNSQuery(srv, cfg.Domain, cfg.Timeout, cfg.Protocol, cfg.DNSType)
 						stats.Lock()
 						stats.TotalRequests++
 						if err != nil {
@@ -293,14 +300,14 @@ func runDNSBenchmark(cfg BenchConfig, logger *zap.Logger) *BenchStats {
 	return &stats
 }
 
-func singleDNSQuery(server, domain string, timeout time.Duration, protocol string) (time.Duration, error) {
+func singleDNSQuery(server, domain string, timeout time.Duration, protocol string, dnsType string) (time.Duration, error) {
 	client := &dns.Client{
 		Net:     protocol,
 		Timeout: timeout,
 	}
 
 	m := new(dns.Msg)
-	m.SetQuestion(dns.Fqdn(domain), dns.TypeA)
+	m.SetQuestion(dns.Fqdn(domain), dns.StringToType[dnsType])
 
 	resp, rtt, err := client.Exchange(m, server)
 	if err != nil {

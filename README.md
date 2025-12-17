@@ -40,6 +40,8 @@ spec:
         value: "dns-benchmark"
       - name: settings.domain
         value: "example.com"
+      - name: settings.dnstype
+        value: "A"
       - name: settings.datacenter
         value: "no-central-az1"
       - name: settings.platform
