@@ -20,7 +20,7 @@ dnsstats runs as a Kubernetes CronJob and can be configured with custom paramete
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: gatewayapi-securitypolicy-operator
+  name: dnsstat-default
   namespace: argocd
 spec:
   project: default
