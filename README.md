@@ -66,7 +66,7 @@ spec:
         value: "Driftsteam xxx"
   destination:
     server: "https://kubernetes.default.svc"
-    namespace: dnsstat
+    namespace: dnsstats
   syncPolicy:
       automated:
           selfHeal: true
