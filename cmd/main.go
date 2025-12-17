@@ -62,8 +62,7 @@ func main() {
 
 	// Update Config with actual IP address
 	if err := GetActualIP(&cfg); err != nil {
-		logger.Warn("Failed to get actual IP address", zap.Error(err))
-		os.Exit(1)
+		logger.Fatal("Failed to get actual IP address", zap.Error(err))
 	}
 
 	logger.Info("Starting DNS benchmark",
@@ -81,8 +80,7 @@ func main() {
 
 	// Send results to Splunk HEC (if configured)
 	if err := sendToSplunkHEC(cfg, stats, logger); err != nil {
-		logger.Warn("Failed to send results to Splunk HEC", zap.Error(err))
-		os.Exit(1)
+		logger.Fatal("Failed to send results to Splunk HEC", zap.Error(err))
 	}
 }
 
