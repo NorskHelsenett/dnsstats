@@ -8,6 +8,7 @@ data:
     {
       "description": {{ .Values.settings.description | quote }},
       "domain": {{ .Values.settings.domain | quote }},
+      "dnstype": {{ .Values.settings.dnstype | quote }},
       "datacenter": {{ .Values.settings.datacenter | quote }},
       "platform": {{ .Values.settings.platform | quote }},
       "servers": [{{- range $index, $server := .Values.settings.servers }}{{- if $index }},{{ end }}{{ $server | quote }}{{- end }}],
