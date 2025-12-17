@@ -6,11 +6,12 @@ metadata:
 spec:
   schedule: {{ .Values.cronjob.schedule | quote }}
   concurrencyPolicy: {{ .Values.cronjob.allowConcurrent | ternary "Allow" "Forbid" }}
-  successfulJobsHistoryLimit: {{ .Values.cronjob.successfulJobsHistoryLimit | default 3 }}
-  failedJobsHistoryLimit: {{ .Values.cronjob.failedJobsHistoryLimit | default 3 }}
+  successfulJobsHistoryLimit: {{ .Values.cronjob.successfulJobsHistoryLimit | default 4 }}
+  failedJobsHistoryLimit: {{ .Values.cronjob.failedJobsHistoryLimit | default 4 }}
   jobTemplate:
     spec:
       template:
+        backoffLimit: {{ .Values.cronjob.backoffLimit | default 1 }}
         metadata:
           labels:
             app: dnsstats-{{ .Values.cronjob.identifier }}
