@@ -1,10 +1,11 @@
 # dnsstats
 
-A tool for collecting and analyzing DNS statistics.
+A tool for collecting and analyzing DNS statistics, with results forwarded to Splunk for further analysis.
 
 ## Description
 
 dnsstats helps you monitor and analyze DNS query patterns, response times, and server performance metrics.
+dnsstats runs as a Kubernetes CronJob and can be configured with custom parameters to suit your needs.
 
 ## Features
 
