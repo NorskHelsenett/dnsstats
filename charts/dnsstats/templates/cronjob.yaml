@@ -53,15 +53,15 @@ spec:
                   mountPath: /etc/ssl/certs/nhn-certbundle.crt
                   subPath: nhn-certbundle.crt
                 {{- end }}
-              volumes:
-                - name: appconfig
-                  configMap:
-                    name: dnsstats-{{ .Values.cronjob.identifier }}-app-config
-                - name: splunk
-                  secret:
-                    secretName: dnsstats-{{ .Values.cronjob.identifier }}-splunk-secret
-                {{- if .Values.container.caBundle }}
-                - name: cabundle
-                  configMap:
-                    name: nhn-certbundle
-                {{- end }}
+          volumes:
+            - name: appconfig
+              configMap:
+                name: dnsstats-{{ .Values.cronjob.identifier }}-app-config
+            - name: splunk
+              secret:
+                secretName: dnsstats-{{ .Values.cronjob.identifier }}-splunk-secret
+            {{- if .Values.container.caBundle }}
+            - name: cabundle
+              configMap:
+                name: nhn-certbundle
+            {{- end }}
