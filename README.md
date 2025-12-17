@@ -44,14 +44,16 @@ spec:
         value: "no-central-az1"
       - name: settings.platform
         value: "vitistack"
-      - name: settings.servers
-        value: ["10.246.196.76","10.245.248.76"]
+      - name: settings.servers[0]
+        value: "10.246.196.76"
+      - name: settings.servers[0]
+        value: "10.245.248.76"
       - name: settings.qps
-        value: 50
+        value: "50"
       - name: settings.duration
-        value: 10
+        value: "10"
       - name: settings.timeout
-        value: 1500
+        value: "1500"
       - name: splunk.token
         value: "46346-23423-56456-24525"
       - name: alarmathan.environment
@@ -59,7 +61,7 @@ spec:
       - name: alarmathan.cluster
         value: "xxx-xxx-xxx"
       - name: alarmathan.service_id
-        value: 754
+        value: "754"
       - name: alarmathan.team
         value: "Driftsteam xxx"
   destination:

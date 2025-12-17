@@ -12,9 +12,9 @@ data:
       "platform": {{ .Values.settings.platform | quote }},
       "servers": [{{- range $index, $server := .Values.settings.servers }}{{- if $index }},{{ end }}{{ $server | quote }}{{- end }}],
       "transport": {{ .Values.settings.transport | quote }}  
-      "port": {{ .Values.settings.port }},
+      "port": {{ .Values.settings.port | int }},
       "actual_address": {{ .Values.settings.actual_address | quote }},
-      "qps": {{ .Values.settings.qps }},
-      "duration": {{ .Values.settings.duration }},
-      "timeout": {{ .Values.settings.timeout }}
+      "qps": {{ .Values.settings.qps | int }},
+      "duration": {{ .Values.settings.duration | int }},
+      "timeout": {{ .Values.settings.timeout | int }}
     }
