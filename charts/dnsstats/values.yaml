@@ -35,7 +35,7 @@ settings:
   domain: nhn.no                      # Domain to be used for DNS queries (e.g. example.com)
   datacenter: no-central-az1          # Datacenter identifier to be included in the DNS stats
   platform: vitistack                 # Platform identifier to be included in the DNS stats
-  servers:                            # List of DNS servers to be queried, remove all servers in list to default to system configured DNS servers
+  servers: []                         # List of DNS servers to be queried, remove all servers in list to default to system configured DNS servers
     # - 10.246.196.76
     # - 10.245.248.76
   transport: "udp"                    # Transport protocol to use for DNS queries (udp, tcp, tls, https)  
