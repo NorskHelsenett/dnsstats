@@ -38,6 +38,7 @@ type BenchConfig struct {
 
 type BenchStats struct {
 	sync.Mutex    `json:"-"`      // exclude from JSON serialization
+	Server        string          `json:"server"`         // exclude from JSON serialization
 	TotalRequests int             `json:"total_requests"` // Total number of requests sent
 	TotalSuccess  int             `json:"total_success"`  // Total number of successful responses
 	TotalFailed   int             `json:"total_failed"`   // Total number of failed requests
@@ -85,7 +86,7 @@ func main() {
 	}
 }
 
-func sendToSplunkHEC(cfg BenchConfig, stats *BenchStats, logger *zap.Logger) error {
+func sendToSplunkHEC(cfg BenchConfig, stats []*BenchStats, logger *zap.Logger) error {
 
 	// Check if Splunk HEC configuration is provided
 	var splunkConfiguration splunkclient.SplunkClient
@@ -112,33 +113,35 @@ func sendToSplunkHEC(cfg BenchConfig, stats *BenchStats, logger *zap.Logger) err
 	)
 
 	// Prepare Splunk HEC request
-	request := splunkmodels.Request{
-		Event: stats,
-		Fields: map[string]string{
-			"description":  cfg.Description,
-			"domain":       cfg.Domain,
-			"dns_type":     cfg.DNSType,
-			"datacenter":   cfg.Datacenter,
-			"platform":     cfg.Platform,
-			"hostname":     cfg.Hostname,
-			"host_address": cfg.HostAddress,
-			"servers":      strings.Join(cfg.Servers, ","),
-			"protocol":     cfg.Protocol,
-			"port":         strconv.Itoa(cfg.Port),
-			"qps":          strconv.Itoa(cfg.QPS),
-			"timeout":      strconv.Itoa(int(cfg.Timeout.Milliseconds())),
-		},
-		Time:       time.Now().Unix(),
-		Index:      splunkConfiguration.HECIndex,
-		Source:     splunkConfiguration.HECSource,
-		Sourcetype: splunkConfiguration.HECSourcetype,
-	}
+	for _, stat := range stats {
+		stat.Server = strings.TrimSuffix(stat.Server, ":"+strconv.Itoa(cfg.Port))
+		request := splunkmodels.Request{
+			Event: stat,
+			Fields: map[string]string{
+				"description":  cfg.Description,
+				"domain":       cfg.Domain,
+				"dns_type":     cfg.DNSType,
+				"datacenter":   cfg.Datacenter,
+				"platform":     cfg.Platform,
+				"hostname":     cfg.Hostname,
+				"host_address": cfg.HostAddress,
+				//"server":       stat.Server,
+				"protocol": cfg.Protocol,
+				"port":     strconv.Itoa(cfg.Port),
+				"qps":      strconv.Itoa(cfg.QPS),
+				"timeout":  strconv.Itoa(int(cfg.Timeout.Milliseconds())),
+			},
+			Time:       time.Now().Unix(),
+			Index:      splunkConfiguration.HECIndex,
+			Source:     splunkConfiguration.HECSource,
+			Sourcetype: splunkConfiguration.HECSourcetype,
+		}
 
-	// Send data to Splunk HEC
-	if err := splunkClient.Send(context.Background(), request); err != nil {
-		return err
+		// Send data to Splunk HEC
+		if err := splunkClient.Send(context.Background(), request); err != nil {
+			return err
+		}
 	}
-
 	logger.Info("Successfully sent benchmark results to Splunk HEC")
 
 	return nil
@@ -239,23 +242,28 @@ func OverrideConfigWithCustomJSON(cfg *BenchConfig, logger *zap.Logger) {
 	}
 }
 
-func updateStats(s *BenchStats) {
-	if s.TotalRequests > 0 {
-		s.PacketLoss = float64(int((100*float64(s.TotalFailed)/float64(s.TotalRequests))*100)) / 100
-	}
+func updateStats(s []*BenchStats) {
 
-	if len(s.RTTs) > 0 {
-		min, max, avg := calcRTTStats(s.RTTs)
-		s.RTTMin = min / time.Millisecond
-		s.RTTMax = max / time.Millisecond
-		s.RTTAvg = avg / time.Millisecond
+	for _, stat := range s {
+
+		if stat.TotalRequests > 0 {
+			stat.PacketLoss = float64(int((100*float64(stat.TotalFailed)/float64(stat.TotalRequests))*100)) / 100
+		}
+
+		if len(stat.RTTs) > 0 {
+			min, max, avg := calcRTTStats(stat.RTTs)
+			stat.RTTMin = min / time.Millisecond
+			stat.RTTMax = max / time.Millisecond
+			stat.RTTAvg = avg / time.Millisecond
+		}
 	}
 
 }
 
-func runDNSBenchmark(cfg BenchConfig, logger *zap.Logger) *BenchStats {
+func runDNSBenchmark(cfg BenchConfig, logger *zap.Logger) []*BenchStats {
 	var wg sync.WaitGroup
-	stats := BenchStats{}
+	var statsList []*BenchStats
+	var statsListMu sync.Mutex
 
 	ctx, cancel := context.WithTimeout(context.Background(), cfg.Duration)
 	defer cancel()
@@ -263,41 +271,47 @@ func runDNSBenchmark(cfg BenchConfig, logger *zap.Logger) *BenchStats {
 	interval := time.Second / time.Duration(cfg.QPS)
 
 	for _, server := range cfg.Servers {
-		srv := server
+		stats := &BenchStats{Server: server}
 
-		wg.Go(func() {
+		wg.Add(1)
+		go func(s string, st *BenchStats) {
+			defer wg.Done()
+
 			ticker := time.NewTicker(interval)
 			defer ticker.Stop()
 
 			for {
 				select {
 				case <-ctx.Done():
+					statsListMu.Lock()
+					statsList = append(statsList, st)
+					statsListMu.Unlock()
 					return
 				case <-ticker.C:
 					go func() {
-						rtt, err := singleDNSQuery(srv, cfg.Domain, cfg.Timeout, cfg.Protocol, cfg.DNSType)
-						stats.Lock()
-						stats.TotalRequests++
+						rtt, err := singleDNSQuery(s, cfg.Domain, cfg.Timeout, cfg.Protocol, cfg.DNSType)
+						st.Lock()
+						st.TotalRequests++
 						if err != nil {
-							stats.TotalFailed++
-							logger.Warn("DNS request failed", zap.String("server", srv), zap.Error(err))
+							st.TotalFailed++
+							logger.Warn("DNS request failed", zap.String("server", s), zap.Error(err))
 						} else {
-							stats.TotalSuccess++
-							stats.RTTs = append(stats.RTTs, rtt)
+							st.TotalSuccess++
+							st.RTTs = append(st.RTTs, rtt)
 							logger.Debug("DNS OK",
-								zap.String("server", srv),
+								zap.String("server", s),
 								zap.Duration("rtt", rtt),
 							)
 						}
-						stats.Unlock()
+						st.Unlock()
 					}()
 				}
 			}
-		})
+		}(server, stats)
 	}
 
 	wg.Wait()
-	return &stats
+	return statsList
 }
 
 func singleDNSQuery(server, domain string, timeout time.Duration, protocol string, dnsType string) (time.Duration, error) {
@@ -321,28 +335,34 @@ func singleDNSQuery(server, domain string, timeout time.Duration, protocol strin
 	return rtt, nil
 }
 
-func printBenchmarkSummary(cfg BenchConfig, s *BenchStats) {
-	fmt.Println("\n================ DNS Benchmark Results ================")
-	fmt.Printf("Description:       %s\n", cfg.Description)
-	fmt.Printf("Domain Queried:    %s\n", cfg.Domain)
-	fmt.Printf("Client Hostname:   %s\n", cfg.Hostname)
-	fmt.Printf("Client Address:    %s\n", cfg.HostAddress)
-	fmt.Printf("Test Duration:     %v\n", cfg.Duration)
-	fmt.Printf("Servers Tested:    %v\n", cfg.Servers)
-	fmt.Printf("Queries/sec:       %d per server\n", cfg.QPS)
-	fmt.Printf("Total Requests:    %d\n", s.TotalRequests)
-	fmt.Printf("Total Success:     %d\n", s.TotalSuccess)
-	fmt.Printf("Total Failed:      %d\n", s.TotalFailed)
-	fmt.Printf("Packet Loss:       %.2f%%\n",
-		s.PacketLoss)
+func printBenchmarkSummary(cfg BenchConfig, s []*BenchStats) {
 
-	if len(s.RTTs) > 0 {
-		fmt.Printf("RTT Min (ms):      %v\n", s.RTTMin.Nanoseconds())
-		fmt.Printf("RTT Max (ms):      %v\n", s.RTTMax.Nanoseconds())
-		fmt.Printf("RTT Avg (ms):      %v\n", s.RTTAvg.Nanoseconds())
+	for _, server := range s {
+		fmt.Println("\n================ DNS Benchmark Result ==================")
+		fmt.Printf("Description:       %s\n", cfg.Description)
+		fmt.Printf("Domain Queried:    %s\n", cfg.Domain)
+		fmt.Printf("DNS Record Type:   %s\n", cfg.DNSType)
+		fmt.Printf("Client Hostname:   %s\n", cfg.Hostname)
+		fmt.Printf("Client Address:    %s\n", cfg.HostAddress)
+		fmt.Printf("Test Duration:     %v\n", cfg.Duration)
+		fmt.Printf("Server Tested:     %v\n", strings.TrimSuffix(server.Server, ":"+strconv.Itoa(cfg.Port)))
+		fmt.Printf("Server Port:       %d\n", cfg.Port)
+		fmt.Printf("Protocol:          %s\n", cfg.Protocol)
+		fmt.Printf("Queries/sec:       %d \n", cfg.QPS)
+		fmt.Printf("Total Requests:    %d\n", server.TotalRequests)
+		fmt.Printf("Total Success:     %d\n", server.TotalSuccess)
+		fmt.Printf("Total Failed:      %d\n", server.TotalFailed)
+		fmt.Printf("Packet Loss:       %.2f%%\n",
+			server.PacketLoss)
+
+		if len(server.RTTs) > 0 {
+			fmt.Printf("RTT Min (ms):      %v\n", server.RTTMin.Nanoseconds())
+			fmt.Printf("RTT Max (ms):      %v\n", server.RTTMax.Nanoseconds())
+			fmt.Printf("RTT Avg (ms):      %v\n", server.RTTAvg.Nanoseconds())
+		}
+
+		fmt.Println("========================================================")
 	}
-
-	fmt.Println("========================================================")
 }
 
 func calcRTTStats(rtts []time.Duration) (time.Duration, time.Duration, time.Duration) {
