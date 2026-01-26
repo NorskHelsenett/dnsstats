@@ -1,6 +1,5 @@
 {
     "endpoint_url" : "https://splunk-hec.nhn.no/services/collector/event",
-    "token": "1435-645654-36-11234-74234-34234",
     "hec_index": "example_index",
     "hec_source": "dnsResponse",
     "hec_sourcetype": "dnsResponse:stats"
