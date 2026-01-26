@@ -83,7 +83,7 @@ spec:
                   subPath: config.json
                 - name: splunk-config
                   mountPath: /app/splunk.json
-                  subPath: /app/splunk.json
+                  subPath: splunk.json
                 {{- if .Values.container.caBundle }}
                 - name: cabundle
                   mountPath: /etc/ssl/certs/nhn-certbundle.crt

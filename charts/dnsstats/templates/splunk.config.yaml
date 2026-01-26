@@ -4,7 +4,7 @@ kind: ConfigMap
 metadata:
   name: dnsstats-{{ .Values.cronjob.identifier }}-splunk-config
   namespace: {{ .Values.namespace | default "dnsstats" }}
-stringData:
+data:
   splunk.json: |
     {
       "endpoint_url": {{ .Values.splunk.endpoint | quote }},
