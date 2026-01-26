@@ -56,7 +56,7 @@ spec:
         value: "10"
       - name: settings.timeout
         value: "1500"
-      - name: splunk.token
+      - name: splunk.token.static
         value: "46346-23423-56456-24525"
       - name: alarmathan.environment
         value: "prod"
