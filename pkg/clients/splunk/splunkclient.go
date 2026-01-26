@@ -13,8 +13,8 @@ import (
 )
 
 type SplunkClient struct {
-	Token             string `json:"token"`                         // Token for authentication
-	EndPointUrl       string `json:"endpoint_url"`                  // Endpoint URL
+	Token             string `json:"token,omitempty"`               // Token for authentication
+	EndPointUrl       string `json:"endpoint_url,omitempty"`        // Endpoint URL
 	DisableKeepAlives bool   `json:"disable_keep_alives,omitempty"` // Disable HTTP keep-alives (optional)
 	DisableTLS        bool   `json:"disable_tls,omitempty"`         // Disable TLS verification (optional)
 	Timeout           int    `json:"timeout,omitempty"`             // Request timeout in seconds (optional)

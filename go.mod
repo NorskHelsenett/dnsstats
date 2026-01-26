@@ -1,6 +1,6 @@
 module github.com/norskhelsenett/dnsstats
 
-go 1.25.5
+go 1.25.6
 
 require (
 	github.com/miekg/dns v1.1.69

@@ -88,23 +88,36 @@ func main() {
 
 func sendToSplunkHEC(cfg BenchConfig, stats []*BenchStats, logger *zap.Logger) error {
 
+	// Check if Splunk HEC Token is provided
+	var splunkSecret splunkclient.SplunkClient
+	customSecretFile, err := os.ReadFile(SplunkSecretPath)
+	if err != nil {
+		logger.Info("could not find valid Splunk token file, continue with Splunk integation", zap.Error(err))
+	} else {
+		logger.Info("load secret from splunk.json")
+		if err := json.Unmarshal(customSecretFile, &splunkSecret); err != nil {
+			logger.Info("failed to parse secret file splunk.json, exit", zap.Error(err))
+			return err
+		}
+	}
+
 	// Check if Splunk HEC configuration is provided
 	var splunkConfiguration splunkclient.SplunkClient
 	customConfigurationFile, err := os.ReadFile("splunk.json")
 	if err != nil {
-		logger.Info("could not find valid splunk.yaml file, skip Splunk integation", zap.Error(err))
+		logger.Info("could not find valid Splunk configuration file, skip Splunk integation", zap.Error(err))
 		return nil
 	} else {
 		logger.Info("load configuration from splunk.json")
 		if err := json.Unmarshal(customConfigurationFile, &splunkConfiguration); err != nil {
-			logger.Info("failed to parse file splunk.json, exit", zap.Error(err))
+			logger.Info("failed to parse configurationfile splunk.json, exit", zap.Error(err))
 			return err
 		}
 	}
 
 	splunkClient := splunkclient.NewSplunkClient(
 		splunkclient.WithEndpointUrl(splunkConfiguration.EndPointUrl),
-		splunkclient.WithToken(splunkConfiguration.Token),
+		splunkclient.WithToken(splunkSecret.Token),
 		splunkclient.WithHECIndex(splunkConfiguration.HECIndex),
 		splunkclient.WithHECSource(splunkConfiguration.HECSource),
 		splunkclient.WithHECSourcetype(splunkConfiguration.HECSourcetype),
