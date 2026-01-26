@@ -57,8 +57,8 @@ spec:
               imagePullPolicy: {{ .Values.image.pullPolicy | default "IfNotPresent" }}
               securityContext:
                 runAsNonRoot: true
-                runAsUser: 1993
-                runAsGroup: 1993
+                runAsUser: 101
+                runAsGroup: 101
                 readOnlyRootFilesystem: true
                 allowPrivilegeEscalation: false
                 capabilities:
@@ -80,7 +80,7 @@ spec:
                   subPath: config.json
                 - name: splunk-config
                   mountPath: /app/splunk.json
-                  subPath: splunk.json
+                  subPath: /app/splunk.json
                 {{- if .Values.container.caBundle }}
                 - name: cabundle
                   mountPath: /etc/ssl/certs/nhn-certbundle.crt
@@ -95,9 +95,6 @@ spec:
             - name: splunk-config
               configMap:
                 name: dnsstats-{{ .Values.cronjob.identifier }}-splunk-config
-                items:
-                  - key: splunk.json
-                  - path: splunk.json
             - name: splunk-secret
               secret:
                 secretName: dnsstats-{{ .Values.cronjob.identifier }}-splunk-secret
