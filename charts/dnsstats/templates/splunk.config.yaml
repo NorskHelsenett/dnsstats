@@ -4,7 +4,6 @@ kind: ConfigMap
 metadata:
   name: dnsstats-{{ .Values.cronjob.identifier }}-splunk-config
   namespace: {{ .Values.namespace | default "dnsstats" }}
-type: Opaque
 stringData:
   splunk.json: |
     {
