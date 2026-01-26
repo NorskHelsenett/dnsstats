@@ -50,10 +50,16 @@ splunk:
   enabled: true                       # Enable or disable Splunk HEC logging
   disable_tls_warning: false          # Disable TLS warnings (not recommended)
   endpoint: https://splunk-hec.nhn.no/services/collector/event
-  token: replace-with-your-token      # Splunk HEC token 
-  index: dc_firewall                  # Splunk index to send data to
-  source: dnsResponse                 # Splunk source
-  sourcetype: dnsResponse:stats       # Splunk sourcetype
+  token:
+    vault:
+      enable: false                  # Enable fetching the token from Vault
+      name: openbao                  # Name of the SecretStore or ClusterSecretStore
+      key: /dnsstats                 # Path to the secret in Vault
+      property: splunk-token         # Property name within the secret to use as the token
+    static: ""                       # Static token value, only used if vault.enable is false
+  index: dc_firewall                 # Splunk index to send data to
+  source: dnsResponse                # Splunk source
+  sourcetype: dnsResponse:stats      # Splunk sourcetype
 
 alarmathan:
   enable: true
