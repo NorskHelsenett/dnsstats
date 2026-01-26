@@ -16,6 +16,9 @@ spec:
           labels:
             app: dnsstats-{{ .Values.cronjob.identifier }}
         spec:
+          securityContext:
+            fsGroup: 101
+            fsGroupChangePolicy: OnRootMismatch
           restartPolicy: Never
           {{- with .Values.container.hostAliases }}
           hostAliases:
@@ -50,7 +53,7 @@ spec:
               mountPath: /config
             - name: splunk-secret
               mountPath: /secrets/splunk
-              readOnly: false
+              readOnly: true
           containers:
             - name: dnsstats-{{ .Values.cronjob.identifier }}
               image: {{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}
