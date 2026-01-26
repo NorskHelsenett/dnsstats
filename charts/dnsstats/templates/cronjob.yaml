@@ -50,7 +50,7 @@ spec:
               mountPath: /config
             - name: splunk-secret
               mountPath: /secrets/splunk
-              readOnly: true
+              readOnly: false
           containers:
             - name: dnsstats-{{ .Values.cronjob.identifier }}
               image: {{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}
@@ -95,6 +95,9 @@ spec:
             - name: splunk-config
               configMap:
                 name: dnsstats-{{ .Values.cronjob.identifier }}-splunk-config
+                items:
+                  - key: splunk.json
+                  - path: splunk.json
             - name: splunk-secret
               secret:
                 secretName: dnsstats-{{ .Values.cronjob.identifier }}-splunk-secret
