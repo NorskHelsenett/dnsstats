@@ -5,7 +5,7 @@ metadata:
   annotations:
     prometheus-operator-validated: "true"
   labels:
-    release: prometheus
+    release: {{ .Values.alarmathan.metadata.labels.release }}
   name: dnsstats-{{ .Values.cronjob.identifier }}-prometheus-rules
   namespace: {{ .Values.namespace | default "dnsstats" }}
 spec:
