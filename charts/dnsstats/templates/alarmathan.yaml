@@ -30,13 +30,13 @@ spec:
         ) >= 4
       for: 0m
       labels:
-        app: {{ .Values.alarmathan.app }}
-        cluster: {{ .Values.alarmathan.cluster }}
-        criticality: {{ .Values.alarmathan.criticality }}
-        environment: {{ .Values.alarmathan.environment }}
-        namespace: prometheus-operator
-        severity: {{ .Values.alarmathan.severity }}
-        service_id: {{ .Values.alarmathan.service_id | quote }}
-        team: {{ .Values.alarmathan.team }}
-        varseltilos: {{ .Values.alarmathan.varseltilos }}
+        app: {{ .Values.alarmathan.labels.app }}
+        cluster: {{ .Values.alarmathan.labels.cluster }}
+        criticality: {{ .Values.alarmathan.labels.criticality }}
+        environment: {{ .Values.alarmathan.labels.environment }}
+        namespace: {{ .Values.alarmathan.labels.namespace }}
+        severity: {{ .Values.alarmathan.labels.severity }}
+        service_id: {{ .Values.alarmathan.labels.service_id | quote }}
+        team: {{ .Values.alarmathan.labels.team }}
+        varseltilos: {{ .Values.alarmathan.labels.varseltilos }}
 {{ end }}
