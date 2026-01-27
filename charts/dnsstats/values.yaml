@@ -63,11 +63,13 @@ splunk:
 
 alarmathan:
   enable: true
-  app: dnsstats
-  environment: prod
-  cluster: p-dcn-001
-  criticality: Høy
-  severity: Høy
-  service_id: 917
-  team: Team Datasenter-Nettverk (Forretningsområde Skytjenester)
-  varseltilos: prod
+  labels:
+    app: dnsstats
+    environment: prod
+    namespace: prometheus-operator
+    cluster: p-dcn-001
+    criticality: Høy
+    severity: Høy
+    service_id: 917
+    team: Team Datasenter-Nettverk (Forretningsområde Skytjenester)
+    varseltilos: prod
