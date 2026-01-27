@@ -63,6 +63,9 @@ splunk:
 
 alarmathan:
   enable: true
+  metadata:
+    labels:
+      release: prometheus
   labels:
     app: dnsstats
     environment: prod
