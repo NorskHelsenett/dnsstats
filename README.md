@@ -58,13 +58,13 @@ spec:
         value: "1500"
       - name: splunk.token.static
         value: "46346-23423-56456-24525"
-      - name: alarmathan.environment
+      - name: alarmathan.labels.environment
         value: "prod"
-      - name: alarmathan.cluster
+      - name: alarmathan.labels.cluster
         value: "xxx-xxx-xxx"
-      - name: alarmathan.service_id
+      - name: alarmathan.labels.service_id
         value: "754"
-      - name: alarmathan.team
+      - name: alarmathan.labels.team
         value: "Driftsteam xxx"
   destination:
     server: "https://kubernetes.default.svc"
