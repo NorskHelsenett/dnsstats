@@ -47,12 +47,12 @@ spec:
             - name: SECRETS_ROOT
               value: /secrets
             - name: OUTPUT_DIR
-              value: /config/secrets
+              value: /config
             volumeMounts:
             - name: config
               mountPath: /config
-            - name: splunk-secret
-              mountPath: /secrets/splunk
+            - name: secrets
+              mountPath: /secrets/app
               readOnly: true
           containers:
             - name: dnsstats-{{ .Values.cronjob.identifier }}
@@ -77,7 +77,7 @@ spec:
                   cpu: {{ .Values.container.limits.cpu.max }}
               volumeMounts:
                 - name: config
-                  mountPath: /config
+                  mountPath: /app/secrets
                 - name: appconfig
                   mountPath: /app/config.json
                   subPath: config.json
@@ -98,9 +98,9 @@ spec:
             - name: splunk-config
               configMap:
                 name: dnsstats-{{ .Values.cronjob.identifier }}-splunk-config
-            - name: splunk-secret
+            - name: secrets
               secret:
-                secretName: dnsstats-{{ .Values.cronjob.identifier }}-splunk-secret
+                secretName: dnsstats-{{ .Values.cronjob.identifier }}-secrets
             {{- if .Values.container.caBundle }}
             - name: cabundle
               configMap:
