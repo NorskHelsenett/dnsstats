@@ -43,16 +43,11 @@ spec:
             command:
               - /bin/sh
               - /scripts/k8s-secret-scribe.sh
-            env:
-            - name: SECRETS_ROOT
-              value: /secrets
-            - name: OUTPUT_DIR
-              value: /config
             volumeMounts:
-            - name: config
-              mountPath: /config
-            - name: secrets
-              mountPath: /secrets/app
+            - name: shared-secrets
+              mountPath: /shared-secrets
+            - name: app-secrets
+              mountPath: /mount-secret-as-subfolder/app
               readOnly: true
           containers:
             - name: dnsstats-{{ .Values.cronjob.identifier }}
@@ -76,7 +71,7 @@ spec:
                   memory: {{ .Values.container.limits.memory.max }}
                   cpu: {{ .Values.container.limits.cpu.max }}
               volumeMounts:
-                - name: config
+                - name: shared-secrets
                   mountPath: /app/secrets
                 - name: appconfig
                   mountPath: /app/config.json
@@ -90,7 +85,7 @@ spec:
                   subPath: nhn-certbundle.crt
                 {{- end }}
           volumes:
-            - name: config
+            - name: shared-secrets
               emptyDir: {}
             - name: appconfig
               configMap:
@@ -98,7 +93,7 @@ spec:
             - name: splunk-config
               configMap:
                 name: dnsstats-{{ .Values.cronjob.identifier }}-splunk-config
-            - name: secrets
+            - name: app-secrets
               secret:
                 secretName: dnsstats-{{ .Values.cronjob.identifier }}-secrets
             {{- if .Values.container.caBundle }}
