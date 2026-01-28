@@ -10,5 +10,5 @@ const (
 	DefaultProtocol      = "udp"                   // udp or tcp
 	DefaultPort          = 53                      // DNS port
 	DefaultActualAddress = "https://api.ipify.org" // Service to get actual IP address
-	SplunkSecretPath     = "/secrets/app.json"     // Path to Splunk HEC secret file
+	SplunkSecretPath     = "/app/secrets/app.json" // Path to Splunk HEC secret file
 )
